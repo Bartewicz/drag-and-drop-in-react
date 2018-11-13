@@ -1,5 +1,7 @@
 // Reducers
-import { handleSortOnDrop, updateCurrentList } from '../Characters/reducer';
+import {
+  handleSortOnDrop, updateCurrentList, setDataIsLoading, setDataIsLoaded
+} from '../Characters/reducer';
 
 // Actions types
 const DRAG_START = 'dragAndDrop/DRAG_START';
@@ -16,7 +18,8 @@ const dragEnter = () => ({ type: DRAG_ENTER })
 
 // Initial state
 const initialState = {
-  draggedCharIndex: null
+  draggedCharIndex: null,
+  counter: 0
 }
 
 export default (state = initialState, action) => {
@@ -38,7 +41,8 @@ export default (state = initialState, action) => {
     case DRAG_DROP:
       return {
         ...state,
-        draggedCharIndex: null
+        draggedCharIndex: null,
+        counter: state.counter++
       }
     default:
       return state
@@ -47,9 +51,6 @@ export default (state = initialState, action) => {
 
 // Logic
 export const handleDragStart = (event) => (dispatch, getState) => {
-  event.stopPropagation()
-  console.log('dragstart')
-
   const active = event.target
   dispatch(dragStart(active.dataset.index))
   active.classList.add('active')
@@ -70,17 +71,24 @@ export const handleDragStart = (event) => (dispatch, getState) => {
 }
 
 const handleDragEnd = (event) => (dispatch, getState) => {
-  console.log('dragend')
   dispatch(dragEnd())
   const active = event.target
   active.classList.remove('active')
+  const isDataLoaded = getState().characters.isDataLoaded
 
   const dropzones = Array.from(document.querySelectorAll('.dropzone'))
   dropzones.forEach(el => el.parentElement.removeChild(el))
+  const cards = Array.from(document.querySelectorAll('.card'))
+  cards.forEach(card => {
+    const clone = card.cloneNode(true)
+    card.parentNode.replaceChild(clone, card)
+  })
+  if (!isDataLoaded) {
+    dispatch(setDataIsLoaded())
+  }
 }
 
 const handleDragEnter = (event) => (dispatch, getState) => {
-  console.log('dragenter')
   const hoveredChar = event.target.parentElement
   if (hoveredChar.hasAttribute('data-index')) {
     dispatch(dragEnter())
@@ -104,9 +112,16 @@ const handleDragOver = (event) => (dispatch, getState) => {
 }
 
 const handleDragLeave = (event) => (dispatch, getState) => {
-  console.log('dragleave')
   const dropzone = event.target
-  if (dropzone.classList.contains('hovered')) {
+  const card = dropzone.parentElement
+  if (
+    card.hasAttribute('data-index')
+    && dropzone.classList.contains('hovered')
+  ) {
+    const sortedCard = document.querySelector('.sorted')
+    if (sortedCard) {
+      sortedCard.classList.remove('sorted')
+    }
     dispatch(dragLeave())
     dropzone.classList.remove('hovered')
     const history = getState().characters.history.slice(0)
@@ -117,11 +132,11 @@ const handleDragLeave = (event) => (dispatch, getState) => {
 }
 
 const handleDrop = (event) => (dispatch, getState) => {
-  console.log('drop')
   const draggedCharIndex = getState().dragAndDrop.draggedCharIndex
   const thisIndex = event.target.parentElement.dataset.index
   if (thisIndex !== draggedCharIndex) {
     const current = getState().characters.current
     dispatch(handleSortOnDrop(current))
+    dispatch(setDataIsLoading())
   }
 }

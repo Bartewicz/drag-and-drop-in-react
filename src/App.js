@@ -10,7 +10,7 @@ class App extends Component {
   componentDidMount() {
     this.props.getCharachtersOnInit()
   }
-
+  
   componentDidUpdate() {
     const cards = document.querySelectorAll('.card')
     for (let card of cards) {
@@ -29,7 +29,7 @@ class App extends Component {
         <main className="App-main">
           <div className="wrapper">
             {
-              this.props.characters
+              this.props.isDataLoaded
                 ? this.props.characters.map((character, i) =>
                   <Card key={i} character={character} index={i} />
                 )
@@ -44,10 +44,11 @@ class App extends Component {
 
 export default connect(
   state => ({
-    characters: state.characters.current
+    characters: state.characters.current,
+    isDataLoaded: state.characters.isDataLoaded
   }),
   dispatch => ({
+    getCharachtersOnInit: () => dispatch(getCharachtersOnInit()),
     handleDragStart: (event) => dispatch(handleDragStart(event)),
-    getCharachtersOnInit: () => dispatch(getCharachtersOnInit())
   })
 )(App)
