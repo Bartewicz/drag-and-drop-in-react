@@ -9,7 +9,7 @@ const Counter = ({ history, handleCharactersReset }) => (
         Sequence changed:
       </span>
       <span className="counter">
-        {history.length - 1}
+        {history.length}
       </span>
     </div>
     <button className="btn"

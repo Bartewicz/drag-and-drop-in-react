@@ -60,7 +60,6 @@ export const getCharachtersOnInit = () => (dispatch, getState) => {
     .then(characters => {
       dispatch(updateCurrentList(characters))
       dispatch(setDefaultCharacters(characters))
-      dispatch(addToHistory([characters]))
     }).catch(error => console.log(error))
 }
 
