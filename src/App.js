@@ -1,21 +1,14 @@
-import React, { Component } from 'react';
-import './App.css';
-import { connect } from 'react-redux';
-import { getCharachtersOnInit } from './components/Characters/reducer';
-import { handleDragStart } from './components/DragAndDrop/reducer';
-import Spinner from './components/Spinner';
-import Card from './components/Card';
+import React, { Component } from 'react'
+import './App.css'
+import { connect } from 'react-redux'
+import { getCharachtersOnInit } from './components/Characters/reducer'
+import Spinner from './components/Spinner'
+import Card from './components/Card'
+import Counter from './components/Characters/Counter'
 
 class App extends Component {
   componentDidMount() {
     this.props.getCharachtersOnInit()
-  }
-  
-  componentDidUpdate() {
-    const cards = document.querySelectorAll('.card')
-    for (let card of cards) {
-      card.addEventListener('dragstart', this.props.handleDragStart)
-    }
   }
 
   render() {
@@ -27,28 +20,33 @@ class App extends Component {
           </h1>
         </header>
         <main className="App-main">
-          <div className="wrapper">
-            {
-              this.props.isDataLoaded
-                ? this.props.characters.map((character, i) =>
-                  <Card key={i} character={character} index={i} />
-                )
-                : <Spinner />
-            }
-          </div>
+          {
+            this.props.characters
+              ? <div className="section-characters">
+                <Counter />
+                <div className="wrapper">
+                  {
+                    this.props.characters.map((character, i) =>
+                      <Card key={i} character={character} index={i} />
+                    )
+                  }
+                </div>
+              </div>
+              : <div className="wrapper">
+                <Spinner />
+              </div>
+          }
         </main>
       </div>
-    );
+    )
   }
 }
 
 export default connect(
   state => ({
-    characters: state.characters.current,
-    isDataLoaded: state.characters.isDataLoaded
+    characters: state.characters.current
   }),
   dispatch => ({
-    getCharachtersOnInit: () => dispatch(getCharachtersOnInit()),
-    handleDragStart: (event) => dispatch(handleDragStart(event)),
+    getCharachtersOnInit: () => dispatch(getCharachtersOnInit())
   })
 )(App)

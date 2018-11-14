@@ -3,16 +3,12 @@ const SET_DEFAULT_CHARACTERS = 'characters/SET_DEFAULT_CHARACTERS'
 const ADD_TO_HISTORY = 'characters/ADD_TO_HISTORY'
 const UPDATE_CURRENT_LIST = 'characters/UPDATE_CURRENT_LIST'
 const SORT_CHARACTERS_ON_RESET = 'characters/SORT_CHARACTERS_ON_RESET'
-const DATA_LOADING = 'characters/DATA_LOADING'
-const DATA_LOADED = 'characters/DATA_LOADED'
 
 // Actions creators
 const setDefaultCharacters = (characters) => ({ type: SET_DEFAULT_CHARACTERS, characters })
-const addToHistory = (characters) => ({ type: ADD_TO_HISTORY, characters})
+const addToHistory = (characters) => ({ type: ADD_TO_HISTORY, characters })
 export const updateCurrentList = (characters) => ({ type: UPDATE_CURRENT_LIST, characters })
-const sortCharactersOnReset = () => ({ type: SORT_CHARACTERS_ON_RESET })
-export const setDataIsLoading = () => ({ type: DATA_LOADING })
-export const setDataIsLoaded = () => ({ type: DATA_LOADED })
+const sortCharactersOnReset = (characters) => ({ type: SORT_CHARACTERS_ON_RESET, characters })
 
 // Initial state
 const initialState = {
@@ -43,17 +39,8 @@ export default (state = initialState, action) => {
     case SORT_CHARACTERS_ON_RESET:
       return {
         ...state,
-        current: state.default
-      }
-    case DATA_LOADING:
-      return {
-        ...state,
-        isDataLoaded: false
-      }
-    case DATA_LOADED:
-      return {
-        ...state,
-        isDataLoaded: true
+        current: action.characters,
+        history: [action.characters]
       }
     default:
       return state
@@ -62,7 +49,13 @@ export default (state = initialState, action) => {
 
 // Logic
 export const getCharachtersOnInit = () => (dispatch, getState) => {
-  fetch('https://rickandmortyapi.com/api/character/1,2,3,183,242,340')
+  fetch(`https://rickandmortyapi.com/api/character/1,2,3,${
+    Math.ceil(Math.random() * 490 + 2)
+    },${
+    Math.ceil(Math.random() * 490 + 2)
+    },${
+    Math.ceil(Math.random() * 490 + 2)
+    }`)
     .then(response => response.json())
     .then(characters => {
       dispatch(updateCurrentList(characters))
@@ -76,8 +69,9 @@ export const handleCharactersReset = () => (dispatch, getState) => {
   dispatch(sortCharactersOnReset(characters))
 }
 
-export const handleSortOnDrop = (characters) => (dispatch, getState) => {
+export const handleSortOnDrop = () => (dispatch, getState) => {
   const history = getState().characters.history.slice(0)
-  history.push(characters)
+  const current = getState().characters.current
+  history.push(current)
   dispatch(addToHistory(history))
 }

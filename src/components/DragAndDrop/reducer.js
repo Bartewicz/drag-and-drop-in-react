@@ -1,25 +1,23 @@
 // Reducers
-import {
-  handleSortOnDrop, updateCurrentList, setDataIsLoading, setDataIsLoaded
-} from '../Characters/reducer';
+import { handleSortOnDrop, updateCurrentList } from '../Characters/reducer'
 
 // Actions types
-const DRAG_START = 'dragAndDrop/DRAG_START';
-const DRAG_END = 'dragAndDrop/DRAG_END';
-const DRAG_LEAVE = 'dragAndDrop/DRAG_LEAVE';
-const DRAG_ENTER = 'dragAndDrop/DRAG_ENTER';
-const DRAG_DROP = 'dragAndDrop/DRAG_DROP';
+const DRAG_START = 'dragAndDrop/DRAG_START'
+const DRAG_END = 'dragAndDrop/DRAG_END'
+const DRAG_LEAVE = 'dragAndDrop/DRAG_LEAVE'
+const DRAG_ENTER = 'dragAndDrop/DRAG_ENTER'
+const DRAG_DROP = 'dragAndDrop/DRAG_DROP'
 
 // Actions creators
 const dragStart = (index) => ({ type: DRAG_START, index })
 const dragEnd = () => ({ type: DRAG_END })
 const dragLeave = () => ({ type: DRAG_LEAVE })
 const dragEnter = () => ({ type: DRAG_ENTER })
+const dragDrop = () => ({ type: DRAG_DROP })
 
 // Initial state
 const initialState = {
-  draggedCharIndex: null,
-  counter: 0
+  draggedCharIndex: null
 }
 
 export default (state = initialState, action) => {
@@ -39,11 +37,7 @@ export default (state = initialState, action) => {
     case DRAG_LEAVE:
       return state
     case DRAG_DROP:
-      return {
-        ...state,
-        draggedCharIndex: null,
-        counter: state.counter++
-      }
+      return state
     default:
       return state
   }
@@ -62,33 +56,19 @@ export const handleDragStart = (event) => (dispatch, getState) => {
       const dropzoneMask = document.createElement('div')
       dropzoneMask.classList.add('dropzone')
       card.appendChild(dropzoneMask)
-      card.addEventListener('dragenter', (e) => dispatch(handleDragEnter(e)))
-      card.addEventListener('dragover', (e) => dispatch(handleDragOver(e)))
-      card.addEventListener('dragleave', (e) => dispatch(handleDragLeave(e)))
-      card.addEventListener('drop', (e) => dispatch(handleDrop(e)))
     }
   })
 }
 
-const handleDragEnd = (event) => (dispatch, getState) => {
+export const handleDragEnd = (event) => (dispatch, getState) => {
   dispatch(dragEnd())
   const active = event.target
   active.classList.remove('active')
-  const isDataLoaded = getState().characters.isDataLoaded
-
   const dropzones = Array.from(document.querySelectorAll('.dropzone'))
   dropzones.forEach(el => el.parentElement.removeChild(el))
-  const cards = Array.from(document.querySelectorAll('.card'))
-  cards.forEach(card => {
-    const clone = card.cloneNode(true)
-    card.parentNode.replaceChild(clone, card)
-  })
-  if (!isDataLoaded) {
-    dispatch(setDataIsLoaded())
-  }
 }
 
-const handleDragEnter = (event) => (dispatch, getState) => {
+export const handleDragEnter = (event) => (dispatch, getState) => {
   const hoveredChar = event.target.parentElement
   if (hoveredChar.hasAttribute('data-index')) {
     dispatch(dragEnter())
@@ -107,11 +87,11 @@ const handleDragEnter = (event) => (dispatch, getState) => {
   }
 }
 
-const handleDragOver = (event) => (dispatch, getState) => {
+export const handleDragOver = (event) => (dispatch, getState) => {
   event.preventDefault()
 }
 
-const handleDragLeave = (event) => (dispatch, getState) => {
+export const handleDragLeave = (event) => (dispatch, getState) => {
   const dropzone = event.target
   const card = dropzone.parentElement
   if (
@@ -131,12 +111,16 @@ const handleDragLeave = (event) => (dispatch, getState) => {
   }
 }
 
-const handleDrop = (event) => (dispatch, getState) => {
+export const handleDrop = (event) => (dispatch, getState) => {
   const draggedCharIndex = getState().dragAndDrop.draggedCharIndex
   const thisIndex = event.target.parentElement.dataset.index
-  if (thisIndex !== draggedCharIndex) {
-    const current = getState().characters.current
-    dispatch(handleSortOnDrop(current))
-    dispatch(setDataIsLoading())
+  if (
+    thisIndex !== undefined
+    && thisIndex !== draggedCharIndex
+  ) {
+    dispatch(handleSortOnDrop())
+    dispatch(dragDrop())
+  } else {
+    event.preventDefault()
   }
 }
